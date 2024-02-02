@@ -184,7 +184,7 @@ void affichage_luminosite(float voltage)
   //Serial.println(voltage);
   if (voltage > 4)
   {
-    LcdString("Trés lumineux");   // 5-4
+    LcdString("Tres lumineux");   // 5-4
   }
   else if (voltage > 2)
   {
@@ -224,6 +224,10 @@ void loop(void)
   int sensorTempValue = analogRead(A1);
   // Convert the analog reading (which goes from 0 - 1023) to a voltage (0 - 5V):
   float temperature = (sensorTempValue * (5.0 / 1023.0));
+  Serial.print("Tension LM335: ");
+  Serial.println(temperature);
+  Serial.print("Temperature: ");
+  Serial.println(temperature * 20 - 9);
 
   // humidité de l'air
   int sensorHumAirValue = analogRead(A2);
@@ -236,7 +240,7 @@ void loop(void)
   affichage_luminosite(voltage);
   lcd_goto(0, 1);
   LcdString("Temp: ");
-  LcdFloat(temperature * 100 - 273);
+  LcdFloat(temperature);
   LcdString("C");
   lcd_goto(0, 2);
   LcdString("H. air: ");
