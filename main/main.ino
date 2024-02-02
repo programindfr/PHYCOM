@@ -220,7 +220,26 @@ void loop(void)
   // Convert the analog reading (which goes from 0 - 1023) to a voltage (0 - 5V):
   float voltage = (sensorLuminValue * (5.0 / 1023.0));
 
+  // la température
+  int sensorTempValue = analogRead(A1);
+  // Convert the analog reading (which goes from 0 - 1023) to a voltage (0 - 5V):
+  float temperature = (sensorTempValue * (5.0 / 1023.0));
+
+  // humidité de l'air
+  int sensorHumAirValue = analogRead(A2);
+  // Convert the analog reading (which goes from 0 - 1023) to a voltage (0 - 5V):
+  float humiditeAir = (sensorHumAirValue * (5.0 / 1023.0));
+  //Serial.println(humiditeAir);
+
   // Affiche LCD
   LcdClear();
   affichage_luminosite(voltage);
+  lcd_goto(0, 1);
+  LcdString("Temp: ");
+  LcdFloat(temperature * 100 - 273);
+  LcdString("C");
+  lcd_goto(0, 2);
+  LcdString("H. air: ");
+  LcdFloat(5 - humiditeAir);
+  delay(750);
 }
