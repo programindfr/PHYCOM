@@ -204,12 +204,36 @@ void affichage_luminosite(float voltage)
   }
 }
 
+void affichage_humidite(float RhumiditeAir, float temperature)
+{
+  float a = 0, b = 0, c = 0, d = 0;
+  if (-2.5 < temperature - 0 && temperature - 0 < 2.5) {a = 12000000; b = 720000; c = 64000; d = 16000;} else
+  if (-2.5 < temperature - 5 && temperature - 5 < 2.5) {a = 9800000; b = 510000; c = 48000; d = 12000;} else
+  if (-2.5 < temperature - 10 && temperature - 10 < 2.5) {a = 7200000; b = 386000; c = 38000; d = 10200;} else
+  if (-2.5 < temperature - 15 && temperature - 15 < 2.5) {a = 5100000; b = 287000; c = 31000; d = 8100;} else
+  if (-2.5 < temperature - 20 && temperature - 20 < 2.5) {a = 3300000; b = 216000; c = 25000; d = 7200;} else
+  if (-2.5 < temperature - 25 && temperature - 25 < 2.5) {a = 2500000; b = 166000; c = 20000; d = 5700;} else
+  if (-2.5 < temperature - 30 && temperature - 30 < 2.5) {a = 2000000; b = 131000; c = 17000; d = 5000;} else
+  if (-2.5 < temperature - 35 && temperature - 35 < 2.5) {a = 1500000; b = 104000; c = 13000; d = 4400;} else
+  if (-2.5 < temperature - 40 && temperature - 40 < 2.5) {a = 1100000; b = 80000; c = 11000; d = 4000;} else
+  if (-2.5 < temperature - 45 && temperature - 45 < 2.5) {a = 900000; b = 66000; c = 9000; d = 3300;} else
+  if (-2.5 < temperature - 50 && temperature - 50 < 2.5) {a = 750000; b = 51000; c = 8000; d = 2900;}
+
+  if(RhumiditeAir < d) {LcdString("Tres humide");} else
+  if(RhumiditeAir < c) {LcdString("Humide");} else
+  if(RhumiditeAir < b) {LcdString("Normal");} else
+  if(RhumiditeAir < a) {LcdString("Sec");}
+  else {LcdString("Tres sec");}
+}
+
 void setup(void)
 {
   Serial.begin(9600);
 
   LcdInitialise();
   LcdClear();
+
+  pinMode(9, OUTPUT); // motor
 }
 
 void loop(void)
@@ -223,17 +247,44 @@ void loop(void)
   // la température
   int sensorTempValue = analogRead(A1);
   // Convert the analog reading (which goes from 0 - 1023) to a voltage (0 - 5V):
-  float temperature = (sensorTempValue * (5.0 / 1023.0));
-  Serial.print("Tension LM335: ");
+  float temperature = (sensorTempValue * (5.0 / 1023.0)) * 20 - 9;
+  /*Serial.print("Tension LM335: ");
   Serial.println(temperature);
   Serial.print("Temperature: ");
-  Serial.println(temperature * 20 - 9);
+  Serial.println(temperature);*/
 
   // humidité de l'air
   int sensorHumAirValue = analogRead(A2);
   // Convert the analog reading (which goes from 0 - 1023) to a voltage (0 - 5V):
   float humiditeAir = (sensorHumAirValue * (5.0 / 1023.0));
   //Serial.println(humiditeAir);
+  float RhumiditeAir = (46000 * 5 / humiditeAir) - 46000;
+  //Serial.println(RhumiditeAir);
+
+  // humidité de la terre
+  int sensorHumSoilValue = analogRead(A3);
+  // Convert the analog reading (which goes from 0 - 1023) to a voltage (0 - 5V):
+  float humSoil = (sensorHumSoilValue * (5.0 / 1023.0));
+  //Serial.println(humSoil);
+
+  // Motor
+  int debit = 0;
+  if (humSoil < 2.5 || 1) {
+    for (int i = 1; i < 255; i += 5) {
+      if (i > 255)
+        debit = 255;
+      else
+        debit = i;
+      analogWrite(9, debit);
+      delay(500);
+    }
+  } else {
+    if (voltage > 4 && temperature > 30) {
+      analogWrite(9, 64);
+    } else {
+      analogWrite(9, 0);
+    }
+  }
 
   // Affiche LCD
   LcdClear();
@@ -244,6 +295,6 @@ void loop(void)
   LcdString("C");
   lcd_goto(0, 2);
   LcdString("H. air: ");
-  LcdFloat(5 - humiditeAir);
+  affichage_humidite(RhumiditeAir, temperature);
   delay(750);
 }
